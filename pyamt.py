@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+# TODO(dmw) update docstring + update to py3
 """
 Input Options
 - put up cash to exercise or sell enough to exercise
@@ -15,10 +16,6 @@ Probably best as a stacked-bar 3d graph:
 
 later add arguments for all constants and bool for whether to print
 a table versus open gnuplot and feed it config
-"""
-
-"""Fix styling and render, compare to interactive gnuplot:
-     plot newhistogram "Taxable Income", "amt3.dat" using 2:xticlabels(1) t "Freed Income", '' using 3 t "Spent Income", '' using 4 t "AMT Income", newhistogram "Regular Tax Estimate", '' using 5:xticlabels(1) t "Income Tax Est.", newhistogram "AMT Estimate", '' using 6:xticlabels(1) t "AMT Est.", newhistogram "Guess Future Returns", '' using 7:xticlabel(1) t "Share price break-even", '' using 8 t "Share price low", '' using 9 t "Share price med", '' using 10 t "Share price high"
 """
 
 import argparse
@@ -39,6 +36,8 @@ max_percent = 100
 
 # not dealing with infinite income
 MAX = 100000000
+
+# TODO(dmw) add option to singles
 
 # 2019 married federal income tax rates
 # amounts are the delta between the brackets
@@ -61,26 +60,6 @@ amt_rate_cutoff = 83100
 
 # 2019 married AMT exemption
 amt_exemption = 111700
-
-# set term x11 enhanced;
-#set term qt font "Arial,6" enhanced;
-# set term qt font ",6" enhanced;
-# set terminal pngcairo nocrop enhanced font "verdana,8";
-"""
-set style increment default
-set xtics border in scale 0,0 nomirror rotate by -45  autojustify
-set xtics  norangelimit  font ",8"
-set xtics   ()
-set ytics border in scale 0,0 mirror norotate  autojustify
-set ytics  norangelimit autofreq  font ",8"
-set ztics border in scale 0,0 nomirror norotate  autojustify
-set cbtics border in scale 0,0 mirror norotate  autojustify
-set rtics axis in scale 0,0 nomirror norotate  autojustify
-set grid noxtics nomxtics ytics nomytics noztics nomztics nortics nomrtics nox2tics nomx2tics noy2tics nomy2tics nocbtics nomcbtics
-set grid layerdefault   lt 0 linecolor 0 linewidth 0.500,  lt 0 linecolor 0 linewidth 0.500
-
-set key above nobox
-"""
 
 # MUST use double quotes in all gnuplot commands
 gnuplot_cmd_block = '''set datafile separator " "
@@ -169,6 +148,7 @@ def run_gnuplot(datafile):
 
 
 def main(args):
+    # TODO(dmw) hollow this out, create object to output different csv row types cast appropriately
     shares = args.shares[0]
     otherincome = float(args.otherincome[0])
     sell = args.sell[0]
@@ -191,9 +171,9 @@ def main(args):
         # AMT does not apply to first 20% which is regular income instead
         amt_income = exercised_shares * (fmvprice - strikeprice)
 
-        print 'total: %s free: %s spent: %s other: %s std: %s' % (free_income + spent_income + otherincome - standard_deduction, free_income, spent_income, otherincome, standard_deduction)
+        # print 'total: %s free: %s spent: %s other: %s std: %s' % (free_income + spent_income + otherincome - standard_deduction, free_income, spent_income, otherincome, standard_deduction)
         est_tax = get_income_tax(free_income + spent_income + otherincome - standard_deduction)
-        print 'percent %s got %s est tax' % (exercise_pct, est_tax)
+        # print 'percent %s got %s est tax' % (exercise_pct, est_tax)
         est_amt_tax = get_amt(free_income + spent_income + amt_income + otherincome - amt_exemption)
 
         # calculate break-even point (for later when a sale is possible) what does that price look like?
@@ -214,7 +194,7 @@ def main(args):
         guess_price_high = guess_high * exercised_shares
 
         data_str = " ".join(['{}%'.format(exercise_pct), str(free_income), str(spent_income), str(amt_income), str(est_tax), str(est_amt_tax), str(guess_neutral), str(guess_price_low), str(guess_price_med), str(guess_price_high)])
-        print data_str.__repr__()
+        # print data_str.__repr__()
         data.append(data_str)
         tax_table.add_row(
             ('{}%'.format(exercise_pct),
@@ -251,13 +231,13 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("iso-helper")
-    parser.add_argument('--sell', nargs=1, default=10, type=int, help='Percentage to sell to fund acquiring more shares (must be enough currently)')
-    parser.add_argument('--shares', nargs=1, default=10000, type=int, help='Total number of shares')
-    parser.add_argument('--strikeprice', nargs=1, default=.75, type=float, help='Strike price per share')
-    parser.add_argument('--currentprice', nargs=1, default=10.0, type=float, help='Current market price per share')
-    parser.add_argument('--fmvprice', nargs=1, default=7.0, type=float, help='Current Fair Market Value (FMV) per share')
-    parser.add_argument('--otherincome', nargs=1, default=0, type=int, help='Other income in exercise year -- used to calculate estimated taxes')
+    parser = argparse.ArgumentParser("pyamt.py")
+    parser.add_argument('--sell', nargs=1, default=[20], type=int, help='Percentage to sell to fund acquiring more shares (must be enough currently)')
+    parser.add_argument('--shares', nargs=1, default=[40000], type=int, help='Total number of shares')
+    parser.add_argument('--strikeprice', nargs=1, default=[1.00], type=float, help='Strike price per share')
+    parser.add_argument('--currentprice', nargs=1, default=[15.0], type=float, help='Current market price per share')
+    parser.add_argument('--fmvprice', nargs=1, default=[10.0], type=float, help='Current Fair Market Value (FMV) per share')
+    parser.add_argument('--otherincome', nargs=1, default=[80000], type=int, help='Other income in exercise year -- used to calculate estimated taxes')
     args = parser.parse_args(sys.argv[1:])
 
     main(args)
