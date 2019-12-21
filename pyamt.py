@@ -25,11 +25,10 @@ import sys
 import tempfile
 
 # easy to imagine 0 and break-even pay-off for all shares purchased
-# but give three cumulative offsets for low/med/high price at future sale
-# translates to break-even +$5, then +$15 and then +$30
-guess_low = 5.0
-guess_med = 10.0
-guess_high = 15.0
+# give three percentages of current price for low/med/high price at future sale
+guess_low = 10.0
+guess_med = 20.0
+guess_high = 50.0
 
 percent_step = 10
 max_percent = 100
@@ -189,9 +188,12 @@ def main(args):
             shares_price_neutral = (spent_income + amt) / exercised_shares
 
         guess_neutral = shares_price_neutral * exercised_shares
-        guess_price_low = guess_low * exercised_shares
-        guess_price_med = guess_med * exercised_shares
-        guess_price_high = guess_high * exercised_shares
+        guess_pps_low = currentprice * (1 + guess_low/100)
+        guess_price_low = guess_pps_low * exercised_shares - guess_neutral
+        guess_pps_med = currentprice * (1 + guess_med/100)
+        guess_price_med = guess_pps_med * exercised_shares - guess_price_low
+        guess_pps_high = currentprice * (1 + guess_high/100)
+        guess_price_high = guess_pps_high * exercised_shares - guess_price_med
 
         data_str = " ".join(['{}%'.format(exercise_pct), str(free_income), str(spent_income), str(amt_income), str(est_tax), str(est_amt_tax), str(guess_neutral), str(guess_price_low), str(guess_price_med), str(guess_price_high)])
         # print data_str.__repr__()
@@ -212,11 +214,11 @@ def main(args):
              round(guess_neutral, 2),
              round(shares_price_neutral, 2),
              round(guess_price_low + guess_neutral, 2),
-             round(shares_price_neutral + guess_low, 2),
+             round(guess_pps_low, 2),
              round(guess_price_med + guess_price_low + guess_neutral, 2),
-             round(shares_price_neutral + guess_low + guess_med, 2),
+             round(guess_pps_med, 2),
              round(guess_price_high + guess_price_med + guess_price_low + guess_neutral, 2),
-             round(shares_price_neutral + guess_low + guess_med + guess_high, 2))
+             round(guess_pps_high, 2))
         )
 
     # TODO(dmw) figure out better way than leaving trash in /tmp
