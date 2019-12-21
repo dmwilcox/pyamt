@@ -84,7 +84,7 @@ set ztics border in scale 0,0 nomirror norotate  autojustify
 set cbtics border in scale 0,0 mirror norotate  autojustify
 set rtics axis in scale 0,0 nomirror norotate  autojustify
 set key bmargin center horizontal Left reverse noenhanced autotitle nobox
-plot newhistogram "Taxable Income", "{}" using 2:xticlabels(1) t "Freed Income" linecolor rgb "#488f31", "" using 3 t "Spent Income" linecolor rgb "#f6bc63", "" using 4 t "AMT Income" linecolor rgb "#f19452", newhistogram "Regular Tax Estimate", "" using 5:xticlabels(1) t "Income Tax Est." linecolor rgb "#e66a4d", newhistogram "AMT Estimate", "" using 6:xticlabels(1) t "AMT Est." linecolor rgb "#de425b", newhistogram "Guess Future Returns", "" using 7:xticlabel(1) t "Share price break-even" linecolor rgb "#f7e382", "" using 8 t "Share price low" linecolor rgb "#bdcf75", "" using 9 t "Share price med" linecolor rgb "#85b96f", "" using 10 t "Share price high" linecolor rgb "#4fa16e" '''
+plot newhistogram "Taxable Income", "{}" using 2:xticlabels(1) t "Sale Income" linecolor rgb "#488f31", "" using 3 t "Sale Income Spent" linecolor rgb "#f6bc63", "" using 4 t "AMT Income" linecolor rgb "#f19452", newhistogram "Tax Estimate", "" using 5:xticlabels(1) t "Income Tax Est." linecolor rgb "#e66a4d", "" using 6 t "AMT Est." linecolor rgb "#de425b", newhistogram "Guess Future Returns", "" using 7:xticlabel(1) t "Share price break-even" linecolor rgb "#f7e382", "" using 8 t "Share price low" linecolor rgb "#bdcf75", "" using 9 t "Share price med" linecolor rgb "#85b96f", "" using 10 t "Share price high" linecolor rgb "#4fa16e" '''
 
 tax_table_columns = (
     "Percent Exercised",
@@ -183,6 +183,7 @@ def main(args):
         # - difference between AMT and regular income tax (if AMT is higher, otherwise 0)
         if not exercised_shares:
             shares_price_neutral = 0
+            amt = 0
         else:
             amt = est_amt_tax - est_tax if est_amt_tax > est_tax else 0
             shares_price_neutral = (spent_income + amt) / exercised_shares
@@ -195,7 +196,7 @@ def main(args):
         guess_pps_high = currentprice * (1 + guess_high/100)
         guess_price_high = guess_pps_high * exercised_shares - guess_price_med
 
-        data_str = " ".join(['{}%'.format(exercise_pct), str(free_income), str(spent_income), str(amt_income), str(est_tax), str(est_amt_tax), str(guess_neutral), str(guess_price_low), str(guess_price_med), str(guess_price_high)])
+        data_str = " ".join(['{}%'.format(exercise_pct), str(free_income), str(spent_income), str(amt_income), str(est_tax), str(amt), str(guess_neutral), str(guess_price_low), str(guess_price_med), str(guess_price_high)])
         # print data_str.__repr__()
         data.append(data_str)
         tax_table.add_row(
